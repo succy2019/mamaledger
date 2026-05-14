@@ -1,0 +1,11 @@
+name = "mamaledger"
+compatibility_date = "2025-01-01"
+pages_build_output_dir = "dist"
+
+[vars]
+JWT_SECRET = "change-this-in-production"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "mamaledger-db"
+database_id = "YOUR_D1_DATABASE_ID"

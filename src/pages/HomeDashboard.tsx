@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useLocation } from 'react-router-dom'
 import TopAppBar from '../components/TopAppBar'
 import BottomNav from '../components/BottomNav'
 import TransactionItem from '../components/TransactionItem'
@@ -17,13 +17,14 @@ const DEFAULT_SUMMARY: DailySummary = {
 
 export default function HomeDashboard() {
   const navigate = useNavigate()
+  const location = useLocation()
   const [summary, setSummary] = useState<DailySummary>(DEFAULT_SUMMARY)
   const [entries, setEntries] = useState<LedgerEntry[]>([])
 
   useEffect(() => {
     getTodaySummary().then(setSummary)
     getRecentEntries(5).then(setEntries)
-  }, [])
+  }, [location.key])
 
   const fmt = (n: number) => n.toLocaleString('en-NG')
 

@@ -35,7 +35,21 @@ function extractQuantity(text: string): number {
 
 function extractType(text: string): EntryType {
   const lower = text.toLowerCase()
-  if (/credit|owe|debt|borrow|pay.?later|on.?credit|owing/i.test(lower)) return 'credit'
+
+  // "credited me / us / my account" = someone paid us → money received → sale
+  // "paid me", "pay me", "sent me", "gave me" = payment received → sale
+  if (/credited?\s+(me|us|my|our)\b/i.test(lower)) return 'sale'
+  if (/\b(paid|pay|sent|gave)\s+(me|us|my|our)\b/i.test(lower)) return 'sale'
+  // "customer paid", "she paid", "he paid" without "for" (which would be an expense) → sale
+  if (/\b(?:customer|she|he|they|nkechi|mama|oga|iya|baba|uncle|aunty|sister|brother)\s+paid\b/i.test(lower)) return 'sale'
+  // "pay back", "paid back" = debt settlement → sale
+  if (/paid?\s+back/i.test(lower)) return 'sale'
+
+  // "sold/gave on credit", "owes", "debt", "borrow" = credit sale → customer owes us
+  if (/\bon\s+credit\b|owe[sd]?\s+me|debt|borrow|pay.?later|owing/i.test(lower)) return 'credit'
+  // "sold on credit" / standalone "credit" only when not "credited me"
+  if (/\bcredit\b/i.test(lower)) return 'credit'
+
   if (/expense|spent|spend|buy|bought|purchase|paid.?for|supply|restock|running.?cost/i.test(lower)) return 'expense'
   if (/stock|store|receive|inventory|new.?goods|got.?in/i.test(lower)) return 'stock'
   return 'sale'
@@ -49,7 +63,7 @@ function extractItem(text: string): string {
     // Remove quantity fragments
     .replace(/\d+\s*(?:pieces?|pcs?|units?|bags?|buckets?|plates?|cups?|dozens?|packs?|bottles?|cartons?|crates?|rolls?|yards?|meters?|litres?|kg|items?)/gi, '')
     // Remove filler words
-    .replace(/\b(i|just|sold|sell|bought|buy|received|got|for|at|each|per|and|the|a|an|of|to|from|by|on|credit|sale|expense|stock)\b/gi, ' ')
+    .replace(/\b(i|me|us|my|our|just|sold|sell|bought|buy|received|got|credited?|paid?|back|gave|sent|for|at|each|per|and|the|a|an|of|to|from|by|on|credit|sale|expense|stock)\b/gi, ' ')
     .replace(/\s+/g, ' ')
     .trim()
 

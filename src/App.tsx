@@ -1,5 +1,6 @@
 import { lazy, Suspense } from 'react'
 import { Routes, Route, Navigate } from 'react-router-dom'
+import { useSyncOnReconnect } from './hooks/useSyncOnReconnect'
 
 const SplashScreen = lazy(() => import('./pages/SplashScreen'))
 const WelcomeScreen = lazy(() => import('./pages/WelcomeScreen'))
@@ -28,6 +29,8 @@ function Loader() {
 }
 
 export default function App() {
+  useSyncOnReconnect()
+
   return (
     <Suspense fallback={<Loader />}>
       <Routes>

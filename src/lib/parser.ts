@@ -28,9 +28,8 @@ function extractQuantity(text: string): number {
   )
   if (match) return parseInt(match[1], 10)
 
-  // Fallback: number at start of phrase like "5 paint bucket"
-  const fallback = text.match(/(\d+)\s+[a-z]/i)
-  return fallback ? parseInt(fallback[1], 10) : 1
+  // Default to 1 — never guess quantity from an ambiguous number
+  return 1
 }
 
 function extractType(text: string): EntryType {
@@ -42,8 +41,8 @@ function extractType(text: string): EntryType {
   if (/\b(paid|pay|sent|gave)\s+(me|us|my|our)\b/i.test(lower)) return 'sale'
   // "customer paid", "she paid", "he paid" without "for" (which would be an expense) → sale
   if (/\b(?:customer|she|he|they|nkechi|mama|oga|iya|baba|uncle|aunty|sister|brother)\s+paid\b/i.test(lower)) return 'sale'
-  // "pay back", "paid back" = debt settlement → sale
-  if (/paid?\s+back/i.test(lower)) return 'sale'
+  // "pay back", "paid back", "settled", "cleared debt" = debt repayment → payback
+  if (/paid?\s+back|pay.?back|settl(ed?|ement)|clear(ed)?\s+(debt|balance)/i.test(lower)) return 'payback'
 
   // "sold/gave on credit", "owes", "debt", "borrow" = credit sale → customer owes us
   if (/\bon\s+credit\b|owe[sd]?\s+me|debt|borrow|pay.?later|owing/i.test(lower)) return 'credit'

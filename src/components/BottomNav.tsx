@@ -19,12 +19,14 @@ export default function BottomNav({ active }: BottomNavProps) {
 
   const activeKey =
     active ??
-    (TABS.find(t => t.path !== '/home' && location.pathname.startsWith(t.path))?.key ?? 'home')
+    (/^\/confirm/.test(location.pathname)
+      ? 'add'
+      : TABS.find(t => t.path !== '/home' && location.pathname.startsWith(t.path))?.key ?? 'home')
 
   return (
     <nav
       className="fixed bottom-0 left-0 w-full z-40 flex justify-around items-center bg-surface rounded-t-2xl"
-      style={{ paddingBottom: '16px', paddingTop: '8px', boxShadow: '0 -4px 16px rgba(0,0,0,0.06)' }}
+      style={{ paddingBottom: 'calc(16px + env(safe-area-inset-bottom, 0px))', paddingTop: '8px', boxShadow: '0 -4px 16px rgba(0,0,0,0.06)' }}
     >
       {TABS.map(tab => {
         const isActive = activeKey === tab.key

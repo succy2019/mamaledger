@@ -8,15 +8,17 @@ import type { EntryType, ParsedEntry } from '../types'
 const CATEGORIES = ['Food', 'Paint', 'Electronics', 'Fabric', 'Provision', 'Cosmetics', 'Other']
 
 const ENTRY_TYPE_OPTIONS: { value: EntryType; label: string; color: string; bg: string; icon: string }[] = [
-  { value: 'sale',    label: 'Sale',    color: '#00450d', bg: '#f0f9f0', icon: 'trending_up' },
-  { value: 'credit',  label: 'Credit',  color: '#835400', bg: '#fff8ef', icon: 'receipt_long' },
-  { value: 'expense', label: 'Expense', color: '#6c2200', bg: '#fff3ee', icon: 'local_shipping' },
-  { value: 'stock',   label: 'Stock',   color: '#41493e', bg: '#f3f3f3', icon: 'inventory_2' },
+  { value: 'sale',    label: 'Sale',     color: '#00450d', bg: '#f0f9f0', icon: 'trending_up' },
+  { value: 'credit',  label: 'Credit',   color: '#835400', bg: '#fff8ef', icon: 'receipt_long' },
+  { value: 'payback', label: 'Pay Back', color: '#00639b', bg: '#e3f4ff', icon: 'handshake' },
+  { value: 'expense', label: 'Expense',  color: '#6c2200', bg: '#fff3ee', icon: 'local_shipping' },
+  { value: 'stock',   label: 'Stock',    color: '#41493e', bg: '#f3f3f3', icon: 'inventory_2' },
 ]
 
 const TYPE_ICON_MAP: Record<EntryType, string> = {
   sale: 'format_paint',
   credit: 'format_paint',
+  payback: 'format_paint',
   expense: 'format_paint',
   stock: 'format_paint',
 }
@@ -111,7 +113,7 @@ export default function EntryConfirmationScreen() {
   return (
     <div
       className="bg-background text-on-background"
-      style={{ minHeight: 'max(884px, 100dvh)', paddingBottom: '96px' }}
+      style={{ minHeight: '100dvh', paddingBottom: 'calc(80px + env(safe-area-inset-bottom, 0px))' }}
     >
       <TopAppBar title="Confirm Entry" showBack onBack={() => navigate('/record')} />
 

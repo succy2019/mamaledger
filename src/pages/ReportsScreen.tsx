@@ -32,7 +32,7 @@ async function getWeeklyStats(): Promise<WeeklyStat[]> {
     .toArray()
 
   for (const e of entries) {
-    if (e.type !== 'sale') continue
+    if (e.type !== 'sale' && e.type !== 'payback') continue
     const d = new Date(e.timestamp)
     const dow = d.getDay()
     const idx = dow === 0 ? 6 : dow - 1
@@ -59,10 +59,10 @@ async function getSummaries() {
     arr.filter(e => e.type === type).reduce((s, e) => s + e.price * e.quantity, 0)
 
   return {
-    todayTotal: sum(today, 'sale') + sum(today, 'credit'),
-    weekTotal: sum(week, 'sale') + sum(week, 'credit'),
-    weekSalesCount: week.filter(e => e.type === 'sale').length,
-    totalIn: sum(allEntries, 'sale'),
+    todayTotal: sum(today, 'sale') + sum(today, 'credit') + sum(today, 'payback'),
+    weekTotal: sum(week, 'sale') + sum(week, 'credit') + sum(week, 'payback'),
+    weekSalesCount: week.filter(e => e.type === 'sale' || e.type === 'payback').length,
+    totalIn: sum(allEntries, 'sale') + sum(allEntries, 'payback'),
     totalOut: sum(allEntries, 'expense'),
   }
 }
@@ -94,7 +94,7 @@ export default function ReportsScreen() {
   return (
     <div
       className="bg-background text-on-background"
-      style={{ minHeight: 'max(884px, 100dvh)', paddingBottom: '100px' }}
+      style={{ minHeight: '100dvh', paddingBottom: 'calc(80px + env(safe-area-inset-bottom, 0px))' }}
     >
       <TopAppBar />
 

@@ -115,8 +115,16 @@
 }
 
 body {
-  min-height: max(884px, 100dvh);
+  min-height: 100dvh;
+  overflow-x: hidden;
   -webkit-tap-highlight-color: transparent;
+}
+
+/* Prevent icon ligature text from flashing before Material Symbols font loads */
+.material-symbols-outlined {
+  font-display: block;
+  -webkit-user-select: none;
+  user-select: none;
 }
 
 .no-scrollbar::-webkit-scrollbar { display: none; }

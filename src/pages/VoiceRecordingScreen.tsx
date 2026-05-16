@@ -128,7 +128,7 @@ export default function VoiceRecordingScreen() {
   return (
     <div
       className="bg-background text-on-background"
-      style={{ minHeight: 'max(884px, 100dvh)', display: 'flex', flexDirection: 'column' }}
+      style={{ minHeight: '100dvh', display: 'flex', flexDirection: 'column' }}
     >
       <TopAppBar title="Voice Entry" />
 

@@ -15,7 +15,7 @@ export default function SettingsPage() {
   }
 
   return (
-    <div style={{ minHeight: 'max(884px, 100dvh)', background: '#f9f9f9', paddingBottom: '96px' }}>
+    <div style={{ minHeight: '100dvh', background: '#f9f9f9', paddingBottom: 'calc(80px + env(safe-area-inset-bottom, 0px))' }}>
       <TopAppBar title="Settings" />
 
       <main style={{ padding: '24px 20px' }}>

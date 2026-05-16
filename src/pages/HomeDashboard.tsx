@@ -31,7 +31,7 @@ export default function HomeDashboard() {
   return (
     <div
       className="bg-background text-on-background"
-      style={{ minHeight: 'max(884px, 100dvh)', paddingBottom: '96px' }}
+      style={{ minHeight: '100dvh', paddingBottom: 'calc(80px + env(safe-area-inset-bottom, 0px))' }}
     >
       <TopAppBar />
       <InstallBanner />

@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { isLoggedIn } from '../lib/api'
 
 const SLIDES = [
   {
@@ -28,7 +29,7 @@ export default function SplashScreen() {
       setSlide(prev => {
         if (prev >= SLIDES.length - 1) {
           clearInterval(timer)
-          setTimeout(() => navigate('/welcome'), 500)
+          setTimeout(() => navigate(isLoggedIn() ? '/home' : '/welcome', { replace: true }), 500)
           return prev
         }
         return prev + 1
@@ -42,7 +43,7 @@ export default function SplashScreen() {
   return (
     <main
       className="relative flex flex-col items-center justify-between overflow-hidden"
-      style={{ minHeight: 'max(884px, 100dvh)', background: '#1b5e20', padding: '0 20px' }}
+      style={{ minHeight: '100dvh', background: '#1b5e20', padding: '0 20px' }}
     >
       {/* Glow blobs */}
       <div

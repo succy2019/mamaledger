@@ -28,7 +28,7 @@ export default function WelcomeScreen() {
 
   return (
     <div
-      style={{ minHeight: 'max(884px, 100dvh)', background: '#f9f9f9', display: 'flex', flexDirection: 'column' }}
+      style={{ minHeight: '100dvh', background: '#f9f9f9', display: 'flex', flexDirection: 'column' }}
     >
       {/* Illustration area */}
       <div

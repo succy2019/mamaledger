@@ -22,20 +22,17 @@ export async function getTodaySummary() {
     .aboveOrEqual(startOfDay.getTime())
     .toArray()
 
+  const moneyIn = (type: string) => entries.filter(e => e.type === type).reduce((sum, e) => sum + e.price * e.quantity, 0)
+  const paybacks = moneyIn('payback')
+
   return {
-    totalSales: entries
-      .filter(e => e.type === 'sale')
-      .reduce((sum, e) => sum + e.price * e.quantity, 0),
-    totalExpenses: entries
-      .filter(e => e.type === 'expense')
-      .reduce((sum, e) => sum + e.price * e.quantity, 0),
-    totalCredit: entries
-      .filter(e => e.type === 'credit')
-      .reduce((sum, e) => sum + e.price * e.quantity, 0),
+    totalSales: moneyIn('sale') + paybacks,
+    totalExpenses: moneyIn('expense'),
+    totalCredit: Math.max(0, moneyIn('credit') - paybacks),
     stockCount: entries
       .filter(e => e.type === 'stock')
       .reduce((sum, e) => sum + e.quantity, 0),
-    salesCount: entries.filter(e => e.type === 'sale').length,
+    salesCount: entries.filter(e => e.type === 'sale' || e.type === 'payback').length,
   }
 }
 

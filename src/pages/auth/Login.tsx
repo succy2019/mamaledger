@@ -76,7 +76,7 @@ export default function Login() {
   }
 
   return (
-    <div style={{ minHeight: 'max(884px, 100dvh)', background: '#f9f9f9', display: 'flex', flexDirection: 'column' }}>
+    <div style={{ minHeight: '100dvh', background: '#f9f9f9', display: 'flex', flexDirection: 'column' }}>
       {/* Header */}
       <header style={{ display: 'flex', alignItems: 'center', padding: '0 20px', height: '56px', background: '#ffffff', boxShadow: '0 1px 4px rgba(0,0,0,0.06)' }}>
         <button

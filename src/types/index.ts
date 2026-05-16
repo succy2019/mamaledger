@@ -1,4 +1,4 @@
-export type EntryType = 'sale' | 'credit' | 'expense' | 'stock'
+export type EntryType = 'sale' | 'credit' | 'expense' | 'stock' | 'payback'
 
 export interface LedgerEntry {
   id?: number

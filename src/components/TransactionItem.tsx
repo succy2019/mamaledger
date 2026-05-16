@@ -41,6 +41,15 @@ const TYPE_CONFIG = {
     amtColor: '#41493e',
     prefix: '',
   },
+  payback: {
+    borderColor: '#00639b',
+    iconBg: '#c8e6ff',
+    iconColor: '#001e2e',
+    icon: 'handshake',
+    label: 'Pay Back',
+    amtColor: '#00639b',
+    prefix: '+',
+  },
 }
 
 export default function TransactionItem({ entry }: TransactionItemProps) {

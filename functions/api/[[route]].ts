@@ -5,6 +5,7 @@ import { cors } from 'hono/cors'
 interface Env {
   DB: D1Database
   JWT_SECRET: string
+  AI: Ai
 }
 
 const app = new Hono<{ Bindings: Env }>().basePath('/api')
@@ -177,5 +178,124 @@ app.post('/entries/sync', async c => {
 
 // ── Health check ──────────────────────────────────────────────────────────────
 app.get('/health', c => c.json({ status: 'ok', ts: Date.now() }))
+
+// ── AI helpers ────────────────────────────────────────────────────────────────
+function requireBearer(authHeader: string | undefined): boolean {
+  return !!authHeader?.startsWith('Bearer ')
+}
+
+function extractJsonObject(text: string): unknown {
+  // Strip markdown code fences if LLaMA wraps output
+  const stripped = text.replace(/```(?:json)?\s*/g, '').replace(/```/g, '')
+  const match = stripped.match(/\{[\s\S]*\}/)
+  if (!match) throw new Error('No JSON object found in model response')
+  return JSON.parse(match[0])
+}
+
+// ── AI: Transcribe audio via Whisper ─────────────────────────────────────────
+app.post('/ai/transcribe', async c => {
+  if (!requireBearer(c.req.header('Authorization'))) {
+    return c.json({ error: 'Unauthorized' }, 401)
+  }
+
+  let audioBuffer: ArrayBuffer
+  try {
+    const formData = await c.req.formData()
+    const audioFile = formData.get('audio')
+    if (!audioFile || typeof audioFile === 'string') {
+      return c.json({ error: 'audio field is required' }, 400)
+    }
+    audioBuffer = await (audioFile as File).arrayBuffer()
+  } catch {
+    return c.json({ error: 'Invalid multipart form data' }, 400)
+  }
+
+  if (audioBuffer.byteLength === 0) {
+    return c.json({ error: 'Audio file is empty' }, 400)
+  }
+
+  try {
+    const audioBytes = [...new Uint8Array(audioBuffer)]
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const result = await (c.env.AI as any).run('@cf/openai/whisper', {
+      audio: audioBytes,
+    }) as { text?: string }
+
+    const transcript = (result?.text ?? '').trim()
+    return c.json({ transcript })
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : 'Whisper model error'
+    return c.json({ error: msg }, 502)
+  }
+})
+
+// ── AI: Parse transcript via LLaMA ────────────────────────────────────────────
+app.post('/ai/parse', async c => {
+  if (!requireBearer(c.req.header('Authorization'))) {
+    return c.json({ error: 'Unauthorized' }, 401)
+  }
+
+  const body = await c.req.json<{ transcript?: string }>().catch(() => ({}))
+  const transcript = (body.transcript ?? '').trim()
+
+  if (!transcript) {
+    return c.json({ error: 'transcript is required' }, 400)
+  }
+  if (transcript.length > 1000) {
+    return c.json({ error: 'transcript too long' }, 400)
+  }
+
+  const systemPrompt = `You are a ledger assistant for small market traders in Nigeria.
+Parse the spoken transaction description and return ONLY a JSON object — no markdown, no explanation.
+
+JSON fields:
+- "item": product or service name (string, 1-4 words)
+- "quantity": number of units (integer, default 1)
+- "price": amount in Naira (number only, no symbol or commas)
+- "type": one of "sale" | "credit" | "expense" | "stock" | "payback"
+  - sale = money received / sold / income
+  - credit = sold on credit / customer owes
+  - expense = bought something / paid for something / cost
+  - stock = received new goods / restocked inventory
+  - payback = debt payment received from customer
+- "customer": customer name if mentioned, else null
+
+Example output: {"item":"rice","quantity":3,"price":1500,"type":"sale","customer":null}`
+
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const result = await (c.env.AI as any).run('@cf/meta/llama-3.1-8b-instruct', {
+      messages: [
+        { role: 'system', content: systemPrompt },
+        { role: 'user', content: transcript },
+      ],
+      max_tokens: 300,
+      stream: false,
+    }) as { response?: string }
+
+    const raw = (result?.response ?? '').trim()
+    const parsed = extractJsonObject(raw) as {
+      item?: unknown
+      quantity?: unknown
+      price?: unknown
+      type?: unknown
+      customer?: unknown
+    }
+
+    const VALID_TYPES = new Set(['sale', 'credit', 'expense', 'stock', 'payback'])
+    const type = VALID_TYPES.has(String(parsed.type)) ? String(parsed.type) : 'sale'
+
+    return c.json({
+      item: String(parsed.item || 'Item').slice(0, 200),
+      quantity: Math.max(1, Math.round(Number(parsed.quantity) || 1)),
+      price: Math.max(0, Number(parsed.price) || 0),
+      type,
+      customer: parsed.customer ? String(parsed.customer).slice(0, 100) : null,
+    })
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : 'LLaMA model error'
+    return c.json({ error: msg }, 502)
+  }
+})
 
 export const onRequest = handle(app)
